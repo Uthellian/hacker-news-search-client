@@ -23,7 +23,7 @@ export class SearchFilterComponent implements OnDestroy {
     serverSideSearchTermSub = this.serverSideSearch!
         .valueChanges
         .pipe(
-            debounceTime(200),
+            debounceTime(500),
             tap(t => this.inputtedServerSideSearch.emit(t))
         )
         .subscribe();
@@ -31,7 +31,7 @@ export class SearchFilterComponent implements OnDestroy {
     clientSideSearchTermSub = this.clientSideSearch!
         .valueChanges
         .pipe(
-            debounceTime(200),
+            debounceTime(500),
             tap(t => this.inputtedClientSideSearch.emit(t))
         )
         .subscribe();

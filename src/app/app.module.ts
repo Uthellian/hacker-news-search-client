@@ -7,6 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AngularMaterialModule } from '../shared/scoped/angular-material.module';
 import { SearchModule } from '../search/search.module';
 import { HttpClientModule } from '@angular/common/http';
+import { ScopedModule } from 'src/shared/scoped/scoped.module';
 
 @NgModule({
     declarations: [
@@ -18,7 +19,8 @@ import { HttpClientModule } from '@angular/common/http';
         BrowserAnimationsModule,
         AngularMaterialModule,
         SearchModule,
-        HttpClientModule
+        HttpClientModule,
+        ScopedModule
     ],
     providers: [],
     bootstrap: [AppComponent]
