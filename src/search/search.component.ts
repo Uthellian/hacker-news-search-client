@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
-import { tap } from 'rxjs/operators';
-import { ISearchFilter, ISearchResultListItem } from './models/search.models';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { of } from 'rxjs';
+import { catchError, mapTo, retryWhen, scan, takeWhile, tap } from 'rxjs/operators';
+import { genericRetryStrategy } from 'src/shared/utility/error-handling';
+import { IPaginationInfo, ISearchFilter, ISearchResultListItem } from './models/search.models';
 import { HackerNewsService } from './services/hacker-news.service';
 
 @Component({
@@ -22,9 +25,20 @@ export class SearchComponent implements OnInit {
 
     hackerNewsSearchList: ISearchResultListItem[] = [];
 
-    constructor(private hackerNewsService: HackerNewsService) { }
+    constructor(private hackerNewsService: HackerNewsService, private snackBar: MatSnackBar) { }
 
     ngOnInit() {
+    }
+
+    updatePaginationInfo(paginationInfo: IPaginationInfo) {
+        const currentPageNum = this.page + 1;
+        
+        if (currentPageNum > paginationInfo.nbPages && paginationInfo.nbPages > 0) {
+            throw Error('Exceeded maximum page.');
+        }
+
+        this.nbPages = paginationInfo.nbPages;
+        this.nbHits = paginationInfo.nbHits;
     }
 
     search(searchFilter: ISearchFilter) {
@@ -43,10 +57,29 @@ export class SearchComponent implements OnInit {
                             url: hit.url 
                         }));
                     
-                    this.nbPages = searchResult.nbPages;
-                    this.nbHits = searchResult.nbHits;
+                    const paginationInfo = {
+                        page: searchResult.page,
+                        hitsPerPage: searchResult.hitsPerPage,
+                        nbPages: searchResult.nbPages,
+                        nbHits: searchResult.nbHits
+                    } as IPaginationInfo
+
+                    this.updatePaginationInfo(paginationInfo);
 
                     this.isLoading = false;
+                }),
+                // The data from Hacker News Search API is constantly changing so we need to try and handle it a bit better.
+                // At the moment we'll just retry up to 3 times with a scaling duration.
+                retryWhen(genericRetryStrategy()),
+                catchError(error => {
+                    this.isLoading = false;
+                    
+                    this.snackBar.open(
+                        'An error occured try searching again in a little while.',
+                        'Close', { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top' }
+                    );
+                    
+                    return of(error);
                 })
             ).subscribe();
     }

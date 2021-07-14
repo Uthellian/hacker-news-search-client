@@ -38,3 +38,17 @@ export interface IHackerNewSearchResult {
     // Number of hits that the search query matched
     nbHits: number;
 }
+
+export interface IPaginationInfo {
+    // The current page
+    page: number; 
+
+    // Maximum number of hits returned for each page
+    hitsPerPage: number;
+
+    // Number of pages available for the current query
+    nbPages: number;
+
+    // Number of hits that the search query matched
+    nbHits: number;
+}
