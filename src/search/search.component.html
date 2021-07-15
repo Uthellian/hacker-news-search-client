@@ -4,7 +4,7 @@
     
     <ng-template #searchTable>
         <div>
-            <table mat-table [dataSource]="hackerNewsSearchList">
+            <table mat-table [dataSource]="clientSideSearchTerm ? hackerNewsSearchFilteredList : hackerNewsSearchList">
 
                 <!-- Author Column -->
                 <ng-container matColumnDef="author">

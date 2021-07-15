@@ -6,6 +6,7 @@ import { catchError, mapTo, retryWhen, scan, takeWhile, tap } from 'rxjs/operato
 import { genericRetryStrategy } from 'src/shared/utility/error-handling';
 import { IPaginationInfo, ISearchFilter, ISearchResultListItem } from './models/search.models';
 import { HackerNewsService } from './services/hacker-news.service';
+import Fuse from 'fuse.js';
 
 @Component({
     selector: 'app-search',
@@ -16,7 +17,7 @@ export class SearchComponent implements OnInit {
 
     displayedColumns: string[] = ['author', 'createdAt', 'numComments', 'points', 'title', 'url'];
 
-    searchTerm = '';
+    serverSideSearchTerm = '';
     isLoading = false;
     page = 0;
     hitsPerPage = 20;
@@ -24,6 +25,9 @@ export class SearchComponent implements OnInit {
     nbHits = 0;
 
     hackerNewsSearchList: ISearchResultListItem[] = [];
+
+    clientSideSearchTerm = '';
+    hackerNewsSearchFilteredList: ISearchResultListItem[] = [];
 
     constructor(private hackerNewsService: HackerNewsService, private snackBar: MatSnackBar) { }
 
@@ -57,6 +61,8 @@ export class SearchComponent implements OnInit {
                             url: hit.url 
                         }));
                     
+                    this.filterSearchResult();
+
                     const paginationInfo = {
                         page: searchResult.page,
                         hitsPerPage: searchResult.hitsPerPage,
@@ -86,18 +92,32 @@ export class SearchComponent implements OnInit {
             ).subscribe();
     }
 
+    filterSearchResult() {
+        if (!this.clientSideSearchTerm) {
+            this.hackerNewsSearchFilteredList = [];
+            return;
+        }
+        
+        const options = {
+            keys: ['title']
+        };
+        const fuse = new Fuse(this.hackerNewsSearchList, options);
+
+        this.hackerNewsSearchFilteredList = fuse.search(this.clientSideSearchTerm).map(m => m.item);
+    }
+
     onInputtedServerSideSearch(searchTerm: string) {
-        this.searchTerm = searchTerm;
+        this.serverSideSearchTerm = searchTerm;
         this.page = 0;
         this.nbPages = 20;
 
-        if (!this.searchTerm) {
+        if (!this.serverSideSearchTerm) {
             this.hackerNewsSearchList = [];
             return;
         }
         
         const searchFilter = {
-            query: this.searchTerm,
+            query: this.serverSideSearchTerm,
             page: 0,
             hitsPerPage: 20
         }
@@ -106,6 +126,8 @@ export class SearchComponent implements OnInit {
     }
 
     onInputtedClientSideSearch(searchTerm: string) {
+        this.clientSideSearchTerm = searchTerm;
+        this.filterSearchResult();
     }
 
     onPaginatorChange(paginator: PageEvent) {
@@ -113,7 +135,7 @@ export class SearchComponent implements OnInit {
         this.hitsPerPage = paginator.pageSize;
         
         const searchFilter = {
-            query: this.searchTerm,
+            query: this.serverSideSearchTerm,
             page: this.page,
             hitsPerPage: this.hitsPerPage
         }

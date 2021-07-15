@@ -34,7 +34,8 @@ describe('SearchFilterComponent', () => {
 
     it('default class properties', () => {
         expect(component.displayedColumns).toEqual(['author', 'createdAt', 'numComments', 'points', 'title', 'url']);
-        expect(component.searchTerm).toBe('');
+        expect(component.serverSideSearchTerm).toBe('');
+        expect(component.clientSideSearchTerm).toBe('');
         expect(component.isLoading).toBe(false);
         expect(component.page).toBe(0);
         expect(component.hitsPerPage).toBe(20);
