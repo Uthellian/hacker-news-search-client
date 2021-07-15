@@ -69,13 +69,15 @@ export class SearchComponent implements OnInit {
                     this.isLoading = false;
                 }),
                 // The data from Hacker News Search API is constantly changing so we need to try and handle it a bit better.
-                // At the moment we'll just retry up to 3 times with a scaling duration.
-                retryWhen(genericRetryStrategy()),
+                // At the moment we'll just retry up to 1 time with a scaling duration.
+                retryWhen(genericRetryStrategy({
+                    maxRetryAttempts: 1
+                  })),
                 catchError(error => {
                     this.isLoading = false;
                     
                     this.snackBar.open(
-                        'An error occured try searching again in a little while.',
+                        'Unable to load the next page.',
                         'Close', { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top' }
                     );
                     

@@ -3,7 +3,7 @@
     <app-loading-spinner *ngIf="isLoading; else searchTable"></app-loading-spinner>
     
     <ng-template #searchTable>
-        <div *ngIf="hackerNewsSearchList.length">
+        <div>
             <table mat-table [dataSource]="hackerNewsSearchList">
 
                 <!-- Author Column -->
@@ -51,9 +51,6 @@
                 [pageIndex]="page"
                 (page)="onPaginatorChange($event)">
             </mat-paginator>
-        </div>
-        <div *ngIf="!hackerNewsSearchList.length">
-            <div>No results.</div>
         </div>
     </ng-template>
 </div>
